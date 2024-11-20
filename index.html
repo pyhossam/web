@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقييم الخدمة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/Css/style.css">
+</head>
+<body>
+    
+<div class="container">
+    <div class="position-relative">
+        <div class="header"></div>
+        <div class="position-absolute top-50 divcaption bg-body-secondary px-3">
+            <h1>تقييم الخدمة</h1>
+        </div>
+    </div>
+    <div class="border w-100 p-2 bg-body-secondary">
+        
+        <form id="evaluationForm">
+            <!-- Employee Dropdown  -->
+            <div class="mb-4">
+                <label for="employeeSelect" class="form-label">الموظف</label>
+                <select class="form-select" id="employeeSelect" required>
+                    <option value="" disabled selected>اختر الموظف</option>
+                </select>
+            </div>
+
+            <!-- Questions and Ratings -->
+            <div id="questionsSection"></div>
+
+            <!-- Comments Section -->
+            <div class="mb-4">
+                <label for="comments" class="form-label">ملاحظاتك (اختياري)</label>
+                <textarea class="form-control" id="comments" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary submit-btn">إرسال التقييم</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Utility function to get query string parameters
+    function getQueryStringParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    // Fetch employee and questions data
+    async function loadData() {
+        // Fetch employees data
+        debugger;
+        const employeesResponse = await fetch('/Data/employees.json');
+        const employees = await employeesResponse.json();
+        const employeeId = getQueryStringParameter('id');
+        const selectedEmployee = employees.filter(item => item.id === Number(employeeId));
+
+        // Get employee ID from query string
+       
+
+        // Populate employee select dropdown
+        const employeeSelect = document.getElementById('employeeSelect');
+        selectedEmployee.forEach(employee => {
+            const option = document.createElement('option');
+            option.value = employee.id;
+            option.textContent = employee.name;
+
+            // Pre-select employee if ID matches the query string
+            if (employeeId && employee.id === Number(employeeId)) {
+                option.selected = true;
+            }
+
+            employeeSelect.appendChild(option);
+        });
+
+        // Disable dropdown if employee ID is present in the query string
+        if (employeeId) {
+            employeeSelect.disabled = true;
+        }
+
+        // Fetch questions data
+        const questionsResponse = await fetch('/Data/questions.json');
+        const questions = await questionsResponse.json();
+
+        // Populate questions section
+        const questionsSection = document.getElementById('questionsSection');
+        questions.forEach(question => {
+            const questionDiv = document.createElement('div');
+            questionDiv.classList.add('mb-4');
+            questionDiv.innerHTML = `
+                <h5>${question.text}</h5>
+                <div class="rating">
+                    <div class="rating-option" data-question-id="${question.id}" data-value="1">
+                        <div class="circle">1</div>
+                        <p>غير راضٍ</p>
+                    </div>
+                    <div class="rating-option" data-question-id="${question.id}" data-value="2">
+                        <div class="circle">2</div>
+                        <p>غير راضٍ قليلاً</p>
+                    </div>
+                    <div class="rating-option" data-question-id="${question.id}" data-value="3">
+                        <div class="circle">3</div>
+                        <p>محايد</p>
+                    </div>
+                    <div class="rating-option" data-question-id="${question.id}" data-value="4">
+                        <div class="circle">4</div>
+                        <p>راضٍ</p>
+                    </div>
+                    <div class="rating-option" data-question-id="${question.id}" data-value="5">
+                        <div class="circle">5</div>
+                        <p>راضٍ جداً</p>
+                    </div>
+                </div>
+            `;
+            questionsSection.appendChild(questionDiv);
+        });
+
+        // Add event listeners for ratings
+        document.querySelectorAll('.rating-option').forEach(option => {
+            option.addEventListener('click', function () {
+                // Remove 'selected' class from all options for this question
+                document.querySelectorAll(`[data-question-id="${this.dataset.questionId}"]`).forEach(i => i.classList.remove('selected'));
+                // Add 'selected' class to the clicked option
+                this.classList.add('selected');
+                console.log(`Question ID ${this.dataset.questionId} - Rating: ${this.dataset.value}`);
+            });
+        });
+    }
+
+    // Form Submission
+    document.getElementById('evaluationForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const selectedEmployeeId = document.getElementById('employeeSelect').value;
+        const selectedRatings = [];
+        document.querySelectorAll('.rating-option.selected').forEach(option => {
+            selectedRatings.push({
+                questionId: option.dataset.questionId,
+                rating: option.dataset.value
+            });
+        });
+
+        const comments = document.getElementById('comments').value;
+
+        if (!selectedEmployeeId || selectedRatings.length === 0) {
+            alert('يرجى اختيار التقييم لجميع الأسئلة.');
+            return;
+        }
+
+        const evaluationData = {
+            employeeId: selectedEmployeeId,
+            ratings: selectedRatings,
+            comments: comments,
+            date: new Date().toISOString()
+        };
+
+        console.log('Evaluation submitted:', evaluationData);
+        alert('تم إرسال التقييم بنجاح. شكرًا لك!');
+
+        // Redirect to Thank You page
+        window.location.href = "/thanks.html"; // Redirect to the "Thank You" page
+    });
+
+    // Load data when the page loads
+    window.onload = loadData;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+</body>
+</html>
