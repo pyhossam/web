@@ -158,8 +158,7 @@
             date: new Date().toISOString()
         };
 
-        console.log('Evaluation submitted:', evaluationData);
-        alert('تم إرسال التقييم بنجاح. شكرًا لك!');
+        
         fetch('https://script.google.com/macros/s/AKfycbyPRIxAv3hLzv8BHKHlgkdfkX7bQ1cCXjhh-fvcqH-UXgki7FesaCW0OttvS9e7m0g/exec', {
       redirect: "follow", 
       method: "POST",
@@ -172,6 +171,7 @@
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
+        
         return response.json();
       })
       .then(data => {
@@ -181,6 +181,8 @@
         console.error('Error:', error);
         alert('Failed to submit data. Check console for details.');
       });
+      console.log('Evaluation submitted:', evaluationData);
+        alert('تم إرسال التقييم بنجاح. شكرًا لك!');
         // Redirect to Thank You page
         window.location.href = "./thanks.html"; // Redirect to the "Thank You" page
     });
