@@ -179,6 +179,7 @@ debugger;
       })
       .catch(error => {
         console.error('Error:', error);
+        console.log("ErrorReturn",error.message);
         alert('Failed to submit data. Check console for details.');
       });
       debugger;
