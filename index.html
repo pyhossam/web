@@ -132,62 +132,56 @@
     }
 
     // Form Submission
-    document.getElementById('evaluationForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-debugger;
-        const selectedEmployeeId = document.getElementById('employeeSelect').value;
-        const selectedRatings = [];
-        document.querySelectorAll('.rating-option.selected').forEach(option => {
-            selectedRatings.push({
-                questionId: option.dataset.questionId,
-                rating: option.dataset.value
-            });
-        });
-debugger;
-        const comments = document.getElementById('comments').value;
+    document.getElementById('evaluationForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
 
-        if (!selectedEmployeeId || selectedRatings.length === 0) {
-            alert('يرجى اختيار التقييم لجميع الأسئلة.');
-            return;
-        }
-
-        const evaluationData = {
-            employeeId: selectedEmployeeId,
-            ratings: selectedRatings,
-            comments: comments,
-            date: new Date().toISOString()
-        };
-debugger;    
-        
-        fetch('https://script.google.com/macros/s/AKfycbz10x4nRzemWbeTF9DeeGArvhuAdO5oZADMrhKFBShjfKQEC_m3nq5kVBhYPqk7dxA/exec', {
-      redirect: "follow", 
-      method: "POST",
-      body: JSON.stringify(evaluationData),
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8",
-      },
-    })
-    .then(response => response.json())
-  .then(data => {
-    if (data.status === "success") {
-      // Redirect to the thank-you page
-      window.location.href = "./thanks.html";
-    } else {
-      console.error("Error:", data.message);
-      alert("Submission failed: " + data.message);
-    }
-  })
-  .catch(error => {
-    console.error("Error:", error);
-    alert("An error occurred. Please try again.");
-  });
-      debugger;
-      console.log('Evaluation submitted:', evaluationData);
-        alert('تم إرسال التقييم بنجاح. شكرًا لك!');
-        // Redirect to Thank You page
-        window.location.href = "./thanks.html"; // Redirect to the "Thank You" page
+  const selectedEmployeeId = document.getElementById('employeeSelect').value;
+  const selectedRatings = [];
+  document.querySelectorAll('.rating-option.selected').forEach(option => {
+    selectedRatings.push({
+      questionId: option.dataset.questionId,
+      rating: option.dataset.value
     });
+  });
+  const comments = document.getElementById('comments').value;
 
+  if (!selectedEmployeeId || selectedRatings.length === 0) {
+    alert('يرجى اختيار التقييم لجميع الأسئلة.');
+    return;
+  }
+
+  const evaluationData = {
+    employeeId: selectedEmployeeId,
+    ratings: selectedRatings,
+    comments: comments,
+    date: new Date().toISOString()
+  };
+
+  try {
+    const response = await fetch(
+      'https://script.google.com/macros/s/AKfycbzIiF9cOumhX0EUir2xgPD-BQYfB_gze1p_2xDXsDx58ntS5-oWq_N8BN6HARIAV1c/exec',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(evaluationData)
+      }
+    );
+
+    if (!response.ok) throw new Error('Failed to contact the server.');
+
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      alert('تم إرسال التقييم بنجاح. شكرًا لك!');
+      window.location.href = './thanks.html';
+    } else {
+      alert(`فشل الإرسال: ${data.message}`);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('حدث خطأ أثناء الإرسال. الرجاء المحاولة مرة أخرى.');
+  }
+});
     // Load data when the page loads
     window.onload = loadData;
 </script>
