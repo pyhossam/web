@@ -15,7 +15,7 @@
     <div class="position-relative">
         <div class="header"></div>
         <div class="position-absolute top-50 divcaption bg-body-secondary px-3">
-            <h1>تقييم الخدمة</h1>
+            <h1>-101تقييم الخدمة</h1>
         </div>
     </div>
     <div class="border w-100 p-2 bg-body-secondary">
@@ -132,32 +132,34 @@
     }
 
     // Form Submission
-    document.getElementById('evaluationForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+    document.getElementById('evaluationForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+debugger;
+        const selectedEmployeeId = document.getElementById('employeeSelect').value;
+        const selectedRatings = [];
+        document.querySelectorAll('.rating-option.selected').forEach(option => {
+            selectedRatings.push({
+                questionId: option.dataset.questionId,
+                rating: option.dataset.value
+            });
+        });
+debugger;
+        const comments = document.getElementById('comments').value;
 
-  const selectedEmployeeId = document.getElementById('employeeSelect').value;
-  const selectedRatings = [];
-  document.querySelectorAll('.rating-option.selected').forEach(option => {
-    selectedRatings.push({
-      questionId: option.dataset.questionId,
-      rating: option.dataset.value
-    });
-  });
-  const comments = document.getElementById('comments').value;
+        if (!selectedEmployeeId || selectedRatings.length === 0) {
+            alert('يرجى اختيار التقييم لجميع الأسئلة.');
+            return;
+        }
 
-  if (!selectedEmployeeId || selectedRatings.length === 0) {
-    alert('يرجى اختيار التقييم لجميع الأسئلة.');
-    return;
-  }
-
-  const evaluationData = {
-    employeeId: selectedEmployeeId,
-    ratings: selectedRatings,
-    comments: comments,
-    date: new Date().toISOString()
-  };
-
-  fetch('https://script.google.com/macros/s/AKfycbygx5ukylK_FbJbiiogsupVHXu5gDZl_pZpc935Ckr1uHMZeBIHPgyliFFTlz3PSP0/exec', {
+        const evaluationData = {
+            employeeId: selectedEmployeeId,
+            ratings: selectedRatings,
+            comments: comments,
+            date: new Date().toISOString()
+        };
+debugger;    
+        
+        fetch('https://script.google.com/macros/s/AKfycbz10x4nRzemWbeTF9DeeGArvhuAdO5oZADMrhKFBShjfKQEC_m3nq5kVBhYPqk7dxA/exec', {
       redirect: "follow", 
       method: "POST",
       body: JSON.stringify(evaluationData),
@@ -165,25 +167,28 @@
         "Content-Type": "text/plain;charset=utf-8",
       },
     })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Failed to fetch. Server responded with ' + response.status);
-    }
-    return response.json();
-  })
-  .then(data => {
-    if (data.status === 'success') {
-      alert('تم إرسال التقييم بنجاح. شكرًا لك!');
-      window.location.href = './thanks.html';
-    } else {
-      alert(`فشل الإرسال: ${data.message}`);
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('حدث خطأ أثناء الإرسال. الرجاء المحاولة مرة أخرى.');
-  });
-});
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        
+        return response.json();
+      })
+      .then(data => {
+        alert(data.message);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        console.log("ErrorReturn",error.message);
+        alert('Failed to submit data. Check console for details.');
+      });
+      debugger;
+      console.log('Evaluation submitted:', evaluationData);
+        alert('تم إرسال التقييم بنجاح. شكرًا لك!');
+        // Redirect to Thank You page
+        window.location.href = "./thanks.html"; // Redirect to the "Thank You" page
+    });
+
     // Load data when the page loads
     window.onload = loadData;
 </script>
